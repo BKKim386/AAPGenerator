@@ -12,9 +12,6 @@ namespace AAPathGenerator
 		{
 			if (_loadedAssets.TryGetValue(name, out var exist))
 			{
-				if (exist is MonoBehaviour mono)
-					return mono.GetComponent<T>();
-				
 				return exist as T;
 			}
 			else
