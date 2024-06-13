@@ -28,11 +28,6 @@ namespace AAPathGenerator
 			{
 				_generator.WriteLine(value);
 			}
-
-			public void WriteConstVariable(string name, string value)
-			{
-				_generator.WriteLine($"public const string {name} = \"{value}\";");
-			}
 		
 			public void Dispose()
 			{
