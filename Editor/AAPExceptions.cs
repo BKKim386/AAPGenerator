@@ -5,7 +5,7 @@ namespace AAPathGenerator
 {
 	public class AAPFormatExceptions : Exception
 	{
-		public AAPFormatExceptions(string addressableName) : base($"Addressable Name must contain \"/\"\nAddressable Name: {addressableName}")
+		public AAPFormatExceptions(string addressableName) : base($"Addressable Name must contain \"/\"\nAddressable Name : {addressableName}")
 		{
 		}
 	}
@@ -13,6 +13,13 @@ namespace AAPathGenerator
 	public class AAPDuplicateNameException : Exception
 	{
 		public AAPDuplicateNameException(string addressableName) : base($"There are DuplicateAddressableName : {addressableName}")
+		{
+		}
+	}
+
+	public class AAPNotSupportTypeException : Exception
+	{
+		public AAPNotSupportTypeException(string extension) : base($"Not support extension : {extension}")
 		{
 		}
 	}

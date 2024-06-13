@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace AAPathGenerator
 {
@@ -119,10 +120,46 @@ namespace AAPathGenerator
 			var split = fullName.Split(".");
 			Extension = split[1];
 			Name = split[0];
+			if (_typeMap.TryGetValue(Extension, out AssetType) == false)
+				throw new AAPNotSupportTypeException(Extension);
 		}
+
+		private static readonly Dictionary<string, Type> _typeMap = new()
+		{
+			{"prefab", typeof(GameObject)},
+			{"unity", typeof(SceneAsset)},
+			{"mat", typeof(Material)},
+			
+			{"png", typeof(Texture2D)},
+			{"jpg", typeof(Texture2D)},
+			{"jpeg", typeof(Texture2D)},
+			{"psd", typeof(Texture2D)},
+			{"tga", typeof(Texture2D)},
+			
+			{"txt", typeof(TextAsset)},
+			{"json", typeof(TextAsset)},
+			{"xml", typeof(TextAsset)},
+			{"bytes", typeof(TextAsset)},
+			{"csv", typeof(TextAsset)},
+			{"html", typeof(TextAsset)},
+			
+			{"mp3", typeof(AudioClip)},
+			{"wav", typeof(AudioClip)},
+			{"ogg", typeof(AudioClip)},
+			
+			{"mp4", typeof(VideoClip)},
+			{"avi", typeof(VideoClip)},
+			{"mov", typeof(VideoClip)},
+			{"webm", typeof(VideoClip)},
+			
+			{"ttf", typeof(Font)},
+			{"otf", typeof(Font)},
+			{"fon", typeof(Font)},
+		};
 
 		public string Name;
 		public string Extension;
+		public Type AssetType;
 	}
 	
 	
@@ -165,6 +202,9 @@ namespace AAPathGenerator
 		{
 			CodeGenStringBuilder builder = new CodeGenStringBuilder();
 
+			builder.WriteLine($"using AAPathGenerator;");
+			builder.WriteLine();
+			
 			foreach (var group in groups)
 			{
 				var namespaceNode = new NamespaceNode(_settings, group.name);
@@ -178,12 +218,7 @@ namespace AAPathGenerator
 					{
 						namespaceNode.Add(entry.address);
 					}
-					catch (AAPFormatExceptions e)
-					{
-						Debug.LogError(e.Message);
-						return string.Empty;
-					}
-					catch (AAPDuplicateNameException e)
+					catch (Exception e)
 					{
 						Debug.LogError(e.Message);
 						return string.Empty;
@@ -216,7 +251,10 @@ namespace AAPathGenerator
 					string stack = pathStack.ToString();
 					foreach (var pair in classNode.ChildrenVariable)
 					{
-						classScope.WriteConstVariable(pair.Value.Name, $"{stack}/{pair.Value.Name}.{pair.Value.Extension}");
+						var node = pair.Value;
+						var pathName = $"_path{node.Name}";
+						classScope.WriteLine($"private const string {pathName} = \"{stack}/{node.Name}.{node.Extension}\";");
+						classScope.WriteLine($"public static {node.AssetType} {node.Name} => AssetLoader.Load<{node.AssetType}>({pathName});");
 					}					
 				}
 				
